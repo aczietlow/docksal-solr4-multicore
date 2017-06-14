@@ -14,23 +14,27 @@ RUN set -x && \
 	tar -C /opt/ --extract --file /opt/$SOLR.tgz && \
 	rm /opt/$SOLR.tgz && \
 	ln -s /opt/$SOLR /opt/solr && \
-	mv /opt/$SOLR/example /opt/solr && \
-	rm -rf $SOLR_COLLECTION_PATH/conf
+	mv /opt/$SOLR/example/multicore /opt/$SOLR
 
 # Configure core0 as the default core
 RUN mkdir /opt/$SOLR/config && \
   mv /opt/solr/multicore/core0 /opt/solr/config/core0 && \
+  mv /opt/solr/multicore/core1 /opt/solr/config/products && \
   ln -s /var/lib/solr/conf /opt/solr/config/core0/conf && \
   ln -s /var/lib/solr/data /opt/solr/config/core0/data
 
+# Clean up extra stuff we don't need
+RUN rm -Rf /opt/$SOLR/docs
+
 # Copy configs
 COPY ./solr/core0/conf /var/lib/solr/conf
+COPY ./solr/solr.xml /opt/$SOLR/config/solr.xml
 
 # Persistent volume for solr data
 VOLUME ["/var/lib/solr/data"]
 
 EXPOSE 8983
 
-WORKDIR /opt/solr/example
+WORKDIR /opt/$SOLR/config
 
-CMD ["/opt/solr/bin/solr", "-f"]
+CMD ["/opt/solr/bin/solr", "-f", "-s", "/opt/solr/config"]
