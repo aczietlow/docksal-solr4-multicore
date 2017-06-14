@@ -1,6 +1,6 @@
 FROM java:openjdk-7-jre
 
-MAINTAINER Team Docksal, https://docksal.io
+#MAINTAINER Team Docksal, https://docksal.io
 
 # Solr version
 ENV SOLR_VERSION 4.10.4
@@ -14,12 +14,17 @@ RUN set -x && \
 	tar -C /opt/ --extract --file /opt/$SOLR.tgz && \
 	rm /opt/$SOLR.tgz && \
 	ln -s /opt/$SOLR /opt/solr && \
-	rm -rf $SOLR_COLLECTION_PATH/conf && \
-	ln -s /var/lib/solr/conf $SOLR_COLLECTION_PATH/conf && \
-	ln -s /var/lib/solr/data $SOLR_COLLECTION_PATH/data
+	mv /opt/$SOLR/example /opt/solr && \
+	rm -rf $SOLR_COLLECTION_PATH/conf
+
+# Configure core0 as the default core
+RUN mkdir /opt/$SOLR/config && \
+  mv /opt/solr/multicore/core0 /opt/solr/config/core0 && \
+  ln -s /var/lib/solr/conf /opt/solr/config/core0/conf && \
+  ln -s /var/lib/solr/data /opt/solr/config/core0/data
 
 # Copy configs
-COPY ./solr/conf /var/lib/solr/conf
+COPY ./solr/core0/conf /var/lib/solr/conf
 
 # Persistent volume for solr data
 VOLUME ["/var/lib/solr/data"]
