@@ -19,15 +19,14 @@ RUN set -x && \
 # Configure core0 as the default core
 RUN mkdir /opt/$SOLR/config && \
   mv /opt/solr/multicore/core0 /opt/solr/config/core0 && \
-  mv /opt/solr/multicore/core1 /opt/solr/config/products && \
-  ln -s /var/lib/solr/conf /opt/solr/config/core0/conf && \
-  ln -s /var/lib/solr/data /opt/solr/config/core0/data
+  mv /opt/solr/multicore/core1 /opt/solr/config/core1
 
 # Clean up extra stuff we don't need
 RUN rm -Rf /opt/$SOLR/docs
 
-# Copy configs
-COPY ./solr/core0/conf /var/lib/solr/conf
+# Copy default configs
+COPY ./solr/core0/conf /opt/$SOLR/config/core0/conf
+COPY ./solr/core0/conf /opt/$SOLR/config/core1/conf
 COPY ./solr/solr.xml /opt/$SOLR/config/solr.xml
 
 # Persistent volume for solr data
